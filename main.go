@@ -29,7 +29,7 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"output": {"parameters": {"hello":"world"}}}`))
+		w.Write([]byte(`{"output": {"parameters": [{"hello":"world"}]}}`))
 	})
 
 	log.Println(http.ListenAndServe(":8080", mux))

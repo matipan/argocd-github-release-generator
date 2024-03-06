@@ -3,8 +3,6 @@ kind: ApplicationSet
 metadata:
   name: argocd-github-release-generator
 spec:
-  goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
   generators:
     - plugin:
         # Specify the configMap where the plugin configuration is located.
@@ -23,21 +21,12 @@ spec:
               key2: "value2"
               key3: "value3"
 
-        # You can also attach arbitrary values to the generator's output under the `values` key. These values will be
-        # available in templates under the `values` key.
-        values:
-          value1: something
-
         # When using a Plugin generator, the ApplicationSet controller polls every `requeueAfterSeconds` interval (defaulting to every 30 minutes) to detect changes.
         requeueAfterSeconds: 10
 
   template:
     metadata:
       name: argocd-github-release-generator
-      annotations:
-        example.from.input.parameters: "{{ index .generator.input.parameters.map \"key1\" }}"
-        example.from.values: "{{ .values.value1 }}"
-        example.from.plugin.output: "{{ .something.from.the.plugin }}"
     spec:
       source:
         repoURL: https://github.com/matipan/argocd-github-release-generator
