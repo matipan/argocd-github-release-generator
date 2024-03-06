@@ -26,16 +26,26 @@ spec:
 
   template:
     metadata:
-      name: argocd-github-release-generator
+      name: "argocd-github-release-generator-{{hello}}"
     spec:
       source:
         repoURL: https://github.com/matipan/argocd-github-release-generator
         targetRevision: main
         path: k8s/manifests
         kustomize:
-          nameSuffix: -{{.hello}}
+          nameSuffix: -{{hello}}
           namespace: "services"
           forceCommonLabels: true
+          images:
+            - ghcr.io/matipan/argocd-github-release-generator:test
+          patches:
+            - target:
+                kind: Service
+                name: argocd-github-release-generator
+              patch: |-
+                kind: Service
+                metadata:
+                  name: argocd-github-release-generator-{{hello}}
       project: default
       syncPolicy:
         syncOptions:
