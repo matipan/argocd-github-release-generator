@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/rs/zerolog/pkgerrors"
+	"golang.org/x/mod/semver"
 )
 
 var (
@@ -51,12 +55,13 @@ func main() {
 	}
 
 	if githubPat == "" {
-		l.Info().Msg("GITHUB_PATH is not set, private repositories will not be accessible")
+		l.Info().Msg("GITHUB_PAT is not set. This means that private repositories will not be accessible and there is a maximum of 60 requests per hour before being rate limited by Github")
 	}
 
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/api/v1/getparams.execute", func(w http.ResponseWriter, r *http.Request) {
+		ctx := l.WithContext(r.Context())
 		if r.Method != "POST" {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -76,8 +81,13 @@ func main() {
 			return
 		}
 
+		if !semver.IsValid(req.Input.Parameters.MinRelease) {
+			l.Error().Msgf("invalid semver: %s", req.Input.Parameters.MinRelease)
+			http.Error(w, "invalid semver. Check https://pkg.go.dev/golang.org/x/mod/semver for details on which are valid versions", http.StatusBadRequest)
+		}
+
 		l.Debug().Msgf("fetching releases for %s", req.Input.Parameters.Repository)
-		releases, err := getReleases(req.Input.Parameters.Repository)
+		releases, err := getReleases(ctx, req.Input.Parameters.Repository)
 		if err != nil {
 			l.Error().Err(err).Msg("failed to fetch releases")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -118,7 +128,7 @@ type Commit struct {
 func getFilteredReleases(releases []Release, minRelease string) []Release {
 	var filteredReleases []Release
 	for _, r := range releases {
-		if r.Name > minRelease {
+		if semver.Compare(r.Name, minRelease) > 0 {
 			filteredReleases = append(filteredReleases, r)
 		}
 	}
@@ -126,10 +136,16 @@ func getFilteredReleases(releases []Release, minRelease string) []Release {
 	return filteredReleases
 }
 
-func getReleases(repo string) ([]Release, error) {
+func getReleases(ctx context.Context, repo string) ([]Release, error) {
+	l := log.Ctx(ctx)
+
 	rr, err := http.NewRequest(http.MethodGet, "https://api.github.com/repos/"+repo+"/tags", nil)
 	if err != nil {
 		return nil, err
+	}
+
+	if githubPat != "" {
+		rr.Header.Set("Authorization", "Bearer "+githubPat)
 	}
 
 	res, err := http.DefaultClient.Do(rr)
@@ -137,6 +153,11 @@ func getReleases(repo string) ([]Release, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		l.Error().Int("github_status_code", res.StatusCode).Msg("failed to fetch releases")
+		return nil, fmt.Errorf("failed to fetch releases, github responded with: %d", res.StatusCode)
+	}
 
 	var releases []Release
 	if err := json.NewDecoder(res.Body).Decode(&releases); err != nil {
