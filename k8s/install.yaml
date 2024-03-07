@@ -53,7 +53,7 @@ spec:
             secretKeyRef:
               key: plugin.argocd-github-release-generator.github_pat
               name: argocd-github-release-generator
-        image: ghcr.io/matipan/argocd-github-release-generator:v0.0.1
+        image: ghcr.io/matipan/argocd-github-release-generator:v0.0.2
         imagePullPolicy: IfNotPresent
         name: argocd-github-release-generator
         ports:

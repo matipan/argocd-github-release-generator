@@ -13,12 +13,12 @@ This project is composed of 4 components:
 
 To install it in your cluster you can run:
 ```terminal
-$ ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.1/k8s/install.yaml | k apply -f -
+$ ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.2/k8s/install.yaml | k apply -f -
 ```
 
 > [!TIP]
 > If you plan to watch private repositories or have a refresh interval lower than 1 per minute then you must specify a GITHUB_PAT.
-> `$ GITHUB_PAT=<YOUR_PAT> ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.1/k8s/install.yaml | k apply -f -`
+> `$ GITHUB_PAT=<YOUR_PAT> ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.2/k8s/install.yaml | k apply -f -`
 
 ## Setting up your ApplicationSet
 
