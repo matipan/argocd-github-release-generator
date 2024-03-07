@@ -62,7 +62,13 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/api/v1/getparams.execute", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/v1/getparams.execute", generatorHandler(l))
+
+	l.Println(http.ListenAndServe(":"+port, mux))
+}
+
+func generatorHandler(l zerolog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := l.WithContext(r.Context())
 		if r.Method != "POST" {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -115,9 +121,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	})
-
-	l.Println(http.ListenAndServe(":"+port, mux))
+	}
 }
 
 type Release struct {
