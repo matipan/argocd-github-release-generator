@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
@@ -13,6 +16,7 @@ var (
 	token     = os.Getenv("ARGOCD_TOKEN")
 	githubPat = os.Getenv("GITHUB_PAT")
 	logLevel  = os.Getenv("LOG_LEVEL")
+	port      = os.Getenv("PORT")
 )
 
 type Request struct {
@@ -33,6 +37,10 @@ type Output struct {
 }
 
 func main() {
+	if port == "" {
+		port = "8080"
+	}
+
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	l := zerolog.New(os.Stderr).With().Timestamp().Caller().Logger()
 
@@ -56,9 +64,9 @@ func main() {
 			return
 		}
 
-		// TODO: check for credentials
-		authz := r.Header.Get("Authorization")
-		if authz != "Bearer "+token {
+		authz := strings.Split(r.Header.Get("Authorization"), " ")
+		if len(authz) < 2 || (len(authz) == 2 && authz[1] != token) {
+			l.Error().Msgf("%+v != %s", authz, token)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -87,15 +95,15 @@ func main() {
 		l.Debug().Msgf("returning %d releases after filtering with min_release of %s", len(out.Parameters), req.Input.Parameters.MinRelease)
 
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(out); err != nil {
 			l.Error().Err(err).Msg("failed to encode response")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	})
 
-	l.Println(http.ListenAndServe(":8080", mux))
+	l.Println(http.ListenAndServe(":"+port, mux))
 }
 
 type Release struct {
@@ -132,10 +140,13 @@ func getReleases(repo string) ([]Release, error) {
 	}
 	defer res.Body.Close()
 
-	var releases []Release
+	b, err := io.ReadAll(res.Body)
+	fmt.Println(string(b), err)
+
+	/*var releases []Release
 	if err := json.NewDecoder(res.Body).Decode(&releases); err != nil {
 		return nil, err
-	}
+	}*/
 
-	return releases, nil
+	return nil, nil
 }
