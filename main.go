@@ -2,8 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -140,13 +138,10 @@ func getReleases(repo string) ([]Release, error) {
 	}
 	defer res.Body.Close()
 
-	b, err := io.ReadAll(res.Body)
-	fmt.Println(string(b), err)
-
-	/*var releases []Release
+	var releases []Release
 	if err := json.NewDecoder(res.Body).Decode(&releases); err != nil {
 		return nil, err
-	}*/
+	}
 
-	return nil, nil
+	return releases, nil
 }
