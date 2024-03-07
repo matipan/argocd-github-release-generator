@@ -28,6 +28,8 @@ spec:
           nameSuffix: -{{name}}
           namespace: "services"
           forceCommonLabels: true
+          commonLabels:
+            app: "app-{{name}}"
           images:
             - ghcr.io/matipan/argocd-github-release-generator:test
           patches:
@@ -53,8 +55,6 @@ spec:
                         env:
                           - name: DAGGER_VERSION
                             value: {{name}}
-                          - name: DAGGER_VERSION_SHA
-                            value: {{commit.sha}}
       project: default
       syncPolicy:
         syncOptions:
