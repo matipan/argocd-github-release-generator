@@ -55,6 +55,8 @@ spec:
                         env:
                           - name: DAGGER_VERSION
                             value: {{name}}
+                          - name: DAGGER_VERSION_SHA
+                            value: {{commit.sha}}
       project: default
       syncPolicy:
         syncOptions:

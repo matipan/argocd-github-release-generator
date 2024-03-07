@@ -35,7 +35,9 @@ type Parameters struct {
 }
 
 type Output struct {
-	Parameters []Release `json:"parameters"`
+	Output struct {
+		Parameters []Release `json:"parameters"`
+	} `json:"output"`
 }
 
 func main() {
@@ -97,10 +99,14 @@ func main() {
 		l.Debug().Msgf("fetched %d releases", len(releases))
 
 		out := Output{
-			Parameters: getFilteredReleases(releases, req.Input.Parameters.MinRelease),
+			Output: struct {
+				Parameters []Release `json:"parameters"`
+			}{
+				Parameters: getFilteredReleases(releases, req.Input.Parameters.MinRelease),
+			},
 		}
 
-		l.Debug().Msgf("returning %d releases after filtering with min_release of %s", len(out.Parameters), req.Input.Parameters.MinRelease)
+		l.Debug().Msgf("returning %d releases after filtering with min_release of %s", len(out.Output.Parameters), req.Input.Parameters.MinRelease)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
