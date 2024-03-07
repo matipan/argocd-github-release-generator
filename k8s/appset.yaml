@@ -5,23 +5,15 @@ metadata:
 spec:
   generators:
     - plugin:
-        # Specify the configMap where the plugin configuration is located.
         configMapRef:
           name: argocd-github-release-generator
-        # You can pass arbitrary parameters to the plugin. `input.parameters` is a map, but values may be any type.
-        # These parameters will also be available on the generator's output under the `generator.input.parameters` key.
         input:
           parameters:
-            key1: "value1"
-            key2: "value2"
-            list: ["list", "of", "values"]
-            boolean: true
-            map:
-              key1: "value1"
-              key2: "value2"
-              key3: "value3"
+            repository: "dagger/dagger"
+            min_release: v0.9.8
 
-        # When using a Plugin generator, the ApplicationSet controller polls every `requeueAfterSeconds` interval (defaulting to every 30 minutes) to detect changes.
+        # When using a Plugin generator, the ApplicationSet controller polls every 
+        # `requeueAfterSeconds` interval (defaulting to every 30 minutes) to detect changes.
         requeueAfterSeconds: 10
 
   template:
