@@ -125,9 +125,10 @@ func generatorHandler(l zerolog.Logger) http.HandlerFunc {
 }
 
 type Release struct {
-	Name   string `json:"name"`
-	Commit Commit `json:"commit"`
-	NodeID string `json:"node_id"`
+	Name     string `json:"name"`
+	NameSlug string `json:"name_slug"`
+	Commit   Commit `json:"commit"`
+	NodeID   string `json:"node_id"`
 }
 
 type Commit struct {
@@ -139,6 +140,7 @@ func getFilteredReleases(releases []Release, minRelease string) []Release {
 	var filteredReleases []Release
 	for _, r := range releases {
 		if semver.Compare(r.Name, minRelease) > 0 {
+			r.NameSlug = strings.ReplaceAll(r.Name, ".", "-")
 			filteredReleases = append(filteredReleases, r)
 		}
 	}
