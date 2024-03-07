@@ -27,6 +27,11 @@ spec:
             secretKeyRef:
               key: plugin.argocd-github-release-generator.token
               name: argocd-github-release-generator
+        - name: GITHUB_PAT
+          valueFrom:
+            secretKeyRef:
+              key: plugin.argocd-github-release-generator.github_pat
+              name: argocd-github-release-generator
         image: ghcr.io/matipan/argocd-github-release-generator:test
         imagePullPolicy: Always
         name: argocd-github-release-generator
