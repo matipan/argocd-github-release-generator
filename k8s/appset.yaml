@@ -18,14 +18,14 @@ spec:
 
   template:
     metadata:
-      name: "argocd-github-release-generator-{{hello}}"
+      name: "argocd-github-release-generator-{{name}}"
     spec:
       source:
         repoURL: https://github.com/matipan/argocd-github-release-generator
         targetRevision: main
         path: k8s/manifests
         kustomize:
-          nameSuffix: -{{hello}}
+          nameSuffix: -{{name}}
           namespace: "services"
           forceCommonLabels: true
           images:
