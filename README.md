@@ -13,18 +13,23 @@ This project is composed of 4 components:
 
 To install it in your cluster you can run:
 ```terminal
-$ ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.2/k8s/install.yaml | k apply -f -
+$ ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.3/k8s/install.yaml | k apply -f -
 ```
 
 > [!TIP]
 > If you plan to watch private repositories or have a refresh interval lower than 1 per minute then you must specify a GITHUB_PAT.
-> `$ GITHUB_PAT=<YOUR_PAT> ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.2/k8s/install.yaml | k apply -f -`
+> `$ GITHUB_PAT=<YOUR_PAT> ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.3/k8s/install.yaml | k apply -f -`
 
 ## Setting up your ApplicationSet
 
 The plugin receives two parameters that you must configure:
 - `repository`: specify the repository that should be used to look for releases.
 - `min_release`: specify the starting point for the releases. This value is useful to control how many applications you generate and remove applications related to old releases.
+
+You can optionally configure the following three parameters to further control which releases should be returned:
+- `keep_releases`: specify how many releases should be kept. If you set this value to `3` then the plugin will only return the 3 most recent releases.
+- `only_latest_minor`: if set to `true` then the plugin will only return the latest release for each major version.
+- `only_latest_patch`: if set to `true` then the plugin will only return the latest release for each minor version. This parameter is ignored if `only_latest_minor` is set to `true`.
 
 > [!NOTE]
 > At the moment this project only supports releases that follow `semver` (e.g `v0.1.0`)

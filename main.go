@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/rs/zerolog"
@@ -31,7 +32,15 @@ type Input struct {
 
 type Parameters struct {
 	Repository string `json:"repository"`
+	// MinRelease is the minimum release that should be returned. If a release is less than this, it will be filtered out
 	MinRelease string `json:"min_release"`
+	// KeepReleases is the number of releases to keep. If set to 0, all releases will be returned
+	KeepReleases int `json:"keep_releases"`
+	// OnlyLatestMinor is a flag that if set to true, will only return the latest minor version of a release
+	OnlyLatestMinor bool `json:"only_latest_minor"`
+	// OnlyLatestPatch is a flag that if set to true, will only return the latest patch version of a release
+	// if OnlyLatestMinor is set to true, this flag will be ignored
+	OnlyLatestPatch bool `json:"only_latest_patch"`
 }
 
 type Output struct {
@@ -104,11 +113,18 @@ func generatorHandler(l zerolog.Logger) http.HandlerFunc {
 
 		l.Debug().Msgf("fetched %d releases", len(releases))
 
+		filtered, err := getFilteredReleases(releases, req.Input.Parameters)
+		if err != nil {
+			l.Error().Err(err).Msg("failed to filter releases")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		out := Output{
 			Output: struct {
 				Parameters []Release `json:"parameters"`
 			}{
-				Parameters: getFilteredReleases(releases, req.Input.Parameters.MinRelease),
+				Parameters: filtered,
 			},
 		}
 
@@ -136,16 +152,60 @@ type Commit struct {
 	URL string `json:"url"`
 }
 
-func getFilteredReleases(releases []Release, minRelease string) []Release {
-	var filteredReleases []Release
+func getFilteredReleases(releases []Release, params Parameters) ([]Release, error) {
+	// Sort releases in a descending order so that returning only the latest patch
+	// of a minor or latest minor of a major version can be done simply with a map
+	sort.SliceStable(releases, func(i, j int) bool {
+		return semver.Compare(releases[i].Name, releases[j].Name) > 0
+	})
+
+	var (
+		filteredReleases []Release
+		latestVersion    = map[string]string{}
+	)
 	for _, r := range releases {
-		if semver.Compare(r.Name, minRelease) > 0 {
-			r.NameSlug = strings.ReplaceAll(r.Name, ".", "-")
-			filteredReleases = append(filteredReleases, r)
+		if semver.Compare(r.Name, params.MinRelease) < 0 {
+			continue
 		}
+
+		// if we reached the amount of releases we want to keep, break out of the loop
+		if params.KeepReleases != 0 && len(filteredReleases) == params.KeepReleases {
+			break
+		}
+
+		version := semver.MajorMinor(r.Name)
+		major := semver.Major(r.Name)
+
+		if params.OnlyLatestMinor {
+			if _, ok := latestVersion[major]; !ok {
+				latestVersion[major] = r.Name
+				r.NameSlug = strings.ReplaceAll(r.Name, ".", "-")
+				filteredReleases = append(filteredReleases, r)
+				continue
+			}
+			continue
+		}
+
+		if params.OnlyLatestPatch {
+			if _, ok := latestVersion[version]; !ok {
+				latestVersion[version] = r.Name
+				r.NameSlug = strings.ReplaceAll(r.Name, ".", "-")
+				filteredReleases = append(filteredReleases, r)
+				continue
+			}
+			continue
+		}
+
+		r.NameSlug = strings.ReplaceAll(r.Name, ".", "-")
+		filteredReleases = append(filteredReleases, r)
 	}
 
-	return filteredReleases
+	// sort the releases by increasing order before returning them
+	sort.SliceStable(filteredReleases, func(i, j int) bool {
+		return semver.Compare(filteredReleases[i].Name, filteredReleases[j].Name) < 0
+	})
+
+	return filteredReleases, nil
 }
 
 func getReleases(ctx context.Context, repo string) ([]Release, error) {
