@@ -2,22 +2,9 @@ package main
 
 import (
 	"context"
-	"net/url"
 )
 
 type Ci struct{}
-
-func (m *Ci) Publish(ctx context.Context, src *Directory, address, username string, password *Secret) (string, error) {
-	u, err := url.Parse(address)
-	if err != nil {
-		return "", err
-	}
-	registry := u.Hostname()
-
-	return m.BaseContainer(ctx, src).
-		WithRegistryAuth(registry, username, password).
-		Publish(ctx, address, ContainerPublishOpts{})
-}
 
 func (m *Ci) BaseContainer(ctx context.Context, src *Directory) *Container {
 	goModCache := dag.CacheVolume("gomod")
