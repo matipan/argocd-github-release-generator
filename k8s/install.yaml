@@ -16,7 +16,9 @@ metadata:
   name: argocd-github-release-generator
   namespace: argocd
 data:
-  token: "$argocd-github-release-generator:plugin.argocd-github-release-generator.token"
+  # This is a workaround to prevent envsubst from removing the `$argocd` string
+  # from the final yaml file after replacing.
+  token: "$${GH_GENERATOR_LEAVE_EMPTY}argocd-github-release-generator:plugin.argocd-github-release-generator.token"
   baseUrl: "http://argocd-github-release-generator.argocd.svc.cluster.local:8080"
 ---
 apiVersion: apps/v1
@@ -53,7 +55,7 @@ spec:
             secretKeyRef:
               key: plugin.argocd-github-release-generator.github_pat
               name: argocd-github-release-generator
-        image: ghcr.io/matipan/argocd-github-release-generator:v0.0.3
+        image: ghcr.io/matipan/argocd-github-release-generator:v0.0.4
         imagePullPolicy: IfNotPresent
         name: argocd-github-release-generator
         ports:

@@ -13,12 +13,12 @@ This project is composed of 4 components:
 
 To install it in your cluster you can run:
 ```terminal
-$ ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.3/k8s/install.yaml | k apply -f -
+$ ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.4/k8s/install.yaml | k apply -f -
 ```
 
 > [!TIP]
 > If you plan to watch private repositories or have a refresh interval lower than 1 per minute then you must specify a GITHUB_PAT.
-> `$ GITHUB_PAT=<YOUR_PAT> ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" curl -s https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.3/k8s/install.yaml | envsubst | k apply -f -`
+> `$ GITHUB_PAT=$(echo -n <YOUR_PAT> | base64 -w 0) ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64 -w 0)" curl -s https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.4/k8s/install.yaml | envsubst | k apply -f -`
 
 ## Setting up your ApplicationSet
 
@@ -36,7 +36,7 @@ You can optionally configure the following three parameters to further control w
 
 With plugin generators you also configure the interval with which ArgoCD polls this plugin. Keep this interval in mind given that each request to the plugin will make a request to Github's API. If you have not configured a GITHUB_PAT then you have a rate limit of 60 requests per hour (one per minute).
 
-An example ApplicationSet that watches the [dagger/dagger](https://github.com/dagger/dagger) repository every minute and creates applications for releases starting at `v0.9.8`:
+An example ApplicationSet that watches the [dagger/dagger](https://github.com/dagger/dagger) repository every minute and creates applications for releases starting at `v0.11.4`:
 ```
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
@@ -51,7 +51,7 @@ spec:
         input:
           parameters:
             repository: "dagger/dagger"
-            min_release: v0.9.8
+            min_release: v0.11.4
         requeueAfterSeconds: 60
 
   template:
