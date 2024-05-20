@@ -18,7 +18,7 @@ $ ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.
 
 > [!TIP]
 > If you plan to watch private repositories or have a refresh interval lower than 1 per minute then you must specify a GITHUB_PAT.
-> `$ GITHUB_PAT=<YOUR_PAT> ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" envsubst < https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.3/k8s/install.yaml | k apply -f -`
+> `$ GITHUB_PAT=<YOUR_PAT> ARGOCD_TOKEN="$(echo -n '<strong_password>' | base64)" curl -s https://raw.githubusercontent.com/matipan/argocd-github-release-generator/v0.0.3/k8s/install.yaml | envsubst | k apply -f -`
 
 ## Setting up your ApplicationSet
 
