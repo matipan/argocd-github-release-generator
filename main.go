@@ -41,9 +41,8 @@ type Parameters struct {
 	// OnlyLatestPatch is a flag that if set to true, will only return the latest patch version of a release
 	// if OnlyLatestMinor is set to true, this flag will be ignored
 	OnlyLatestPatch bool `json:"only_latest_patch"`
-	// When specified the plugin will return an additional item with the slug `latest`
-	// that points to the latest image.
-	WithLatest bool `json:"with_latest"`
+	// When specified the plugin will return an additional item with a custom slug, e.g. `latest`, `dev`, `main`, etc.
+	WithCustomTag string `json:"with_custom_tag"`
 }
 
 type Output struct {
@@ -123,13 +122,14 @@ func generatorHandler(l zerolog.Logger) http.HandlerFunc {
 			return
 		}
 
-		// if withLatest is enabled we add a new release that is a copy of the
+		// if WithCustomTag is set, we add a new release that is a copy of the
 		// latest released version but with a `latest` name slug
-		if req.Input.Parameters.WithLatest {
+		if req.Input.Parameters.WithCustomTag != "" {
 			// filtered is an array of Release (not *Release) so this creates a copy
-			latest := filtered[len(filtered)-1]
-			latest.NameSlug = "latest"
-			latest.TagSlug = fmt.Sprintf("%s-latest", latest.TagSlug)
+			latest := Release{
+				Name:     req.Input.Parameters.WithCustomTag,
+				NameSlug: req.Input.Parameters.WithCustomTag,
+			}
 			filtered = append(filtered, latest)
 		}
 
@@ -156,7 +156,6 @@ func generatorHandler(l zerolog.Logger) http.HandlerFunc {
 type Release struct {
 	Name     string `json:"name"`
 	NameSlug string `json:"name_slug"`
-	TagSlug  string `json:"tag_slug"`
 	Commit   Commit `json:"commit"`
 	NodeID   string `json:"node_id"`
 }
@@ -194,7 +193,6 @@ func getFilteredReleases(releases []Release, params Parameters) ([]Release, erro
 			if _, ok := latestVersion[major]; !ok {
 				latestVersion[major] = r.Name
 				r.NameSlug = strings.ReplaceAll(r.Name, ".", "-")
-				r.TagSlug = r.NameSlug
 				filteredReleases = append(filteredReleases, r)
 				continue
 			}
@@ -205,7 +203,6 @@ func getFilteredReleases(releases []Release, params Parameters) ([]Release, erro
 			if _, ok := latestVersion[version]; !ok {
 				latestVersion[version] = r.Name
 				r.NameSlug = strings.ReplaceAll(r.Name, ".", "-")
-				r.TagSlug = r.NameSlug
 				filteredReleases = append(filteredReleases, r)
 				continue
 			}
@@ -213,7 +210,6 @@ func getFilteredReleases(releases []Release, params Parameters) ([]Release, erro
 		}
 
 		r.NameSlug = strings.ReplaceAll(r.Name, ".", "-")
-		r.TagSlug = r.NameSlug
 		filteredReleases = append(filteredReleases, r)
 	}
 
