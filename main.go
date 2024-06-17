@@ -129,6 +129,7 @@ func generatorHandler(l zerolog.Logger) http.HandlerFunc {
 			// filtered is an array of Release (not *Release) so this creates a copy
 			latest := filtered[len(filtered)-1]
 			latest.NameSlug = "latest"
+			latest.TagSlug = fmt.Sprintf("%s-latest", latest.TagSlug)
 			filtered = append(filtered, latest)
 		}
 
