@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
+	"dagger/dev/internal/dagger"
 )
 
-type Ci struct{}
+type Dev struct{}
 
-func (m *Ci) BaseContainer(ctx context.Context, src *Directory) *Container {
+func (m *Dev) BaseContainer(ctx context.Context,
+	// +defaultPath="."
+	src *dagger.Directory,
+) *dagger.Container {
 	goModCache := dag.CacheVolume("gomod")
 	goBuildCache := dag.CacheVolume("gobuild")
 	server := dag.Container().

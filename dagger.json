@@ -1,6 +1,8 @@
 {
-  "name": "ci",
-  "sdk": "go",
-  "source": "dagger",
-  "engineVersion": "v0.10.1"
+  "name": "dev",
+  "engineVersion": "v0.16.2",
+  "sdk": {
+    "source": "go"
+  },
+  "source": ".dagger"
 }
