@@ -24,10 +24,10 @@ func TestGetFilteredReleases(t *testing.T) {
 				{Name: "v1.0.0"},
 			},
 			expectedReleases: []Release{
-				{Name: "v0.0.0", NameSlug: "v0-0-0"},
-				{Name: "v0.0.1", NameSlug: "v0-0-1"},
-				{Name: "v0.1.0", NameSlug: "v0-1-0"},
-				{Name: "v1.0.0", NameSlug: "v1-0-0"},
+				{Name: "v0.0.0", NameSlug: "v0-0-0", TagSlug: "v0-0-0"},
+				{Name: "v0.0.1", NameSlug: "v0-0-1", TagSlug: "v0-0-1"},
+				{Name: "v0.1.0", NameSlug: "v0-1-0", TagSlug: "v0-1-0"},
+				{Name: "v1.0.0", NameSlug: "v1-0-0", TagSlug: "v1-0-0"},
 			},
 		},
 		{
@@ -45,8 +45,8 @@ func TestGetFilteredReleases(t *testing.T) {
 				{Name: "v1.0.1"},
 			},
 			expectedReleases: []Release{
-				{Name: "v0.1.1", NameSlug: "v0-1-1"},
-				{Name: "v1.0.1", NameSlug: "v1-0-1"},
+				{Name: "v0.1.1", NameSlug: "v0-1-1", TagSlug: "v0-1-1"},
+				{Name: "v1.0.1", NameSlug: "v1-0-1", TagSlug: "v1-0-1"},
 			},
 		},
 		{
@@ -62,8 +62,8 @@ func TestGetFilteredReleases(t *testing.T) {
 				{Name: "v0.1.1"},
 			},
 			expectedReleases: []Release{
-				{Name: "v0.0.1", NameSlug: "v0-0-1"},
-				{Name: "v0.1.1", NameSlug: "v0-1-1"},
+				{Name: "v0.0.1", NameSlug: "v0-0-1", TagSlug: "v0-0-1"},
+				{Name: "v0.1.1", NameSlug: "v0-1-1", TagSlug: "v0-1-1"},
 			},
 		},
 		{
@@ -82,8 +82,8 @@ func TestGetFilteredReleases(t *testing.T) {
 				{Name: "v1.0.1"},
 			},
 			expectedReleases: []Release{
-				{Name: "v0.1.1", NameSlug: "v0-1-1"},
-				{Name: "v1.0.1", NameSlug: "v1-0-1"},
+				{Name: "v0.1.1", NameSlug: "v0-1-1", TagSlug: "v0-1-1"},
+				{Name: "v1.0.1", NameSlug: "v1-0-1", TagSlug: "v1-0-1"},
 			},
 		},
 		{
@@ -101,7 +101,7 @@ func TestGetFilteredReleases(t *testing.T) {
 				{Name: "v1.0.1"},
 			},
 			expectedReleases: []Release{
-				{Name: "v1.0.1", NameSlug: "v1-0-1"},
+				{Name: "v1.0.1", NameSlug: "v1-0-1", TagSlug: "v1-0-1"},
 			},
 		},
 		{
@@ -119,8 +119,8 @@ func TestGetFilteredReleases(t *testing.T) {
 				{Name: "v1.0.1"},
 			},
 			expectedReleases: []Release{
-				{Name: "v1.0.0", NameSlug: "v1-0-0"},
-				{Name: "v1.0.1", NameSlug: "v1-0-1"},
+				{Name: "v1.0.0", NameSlug: "v1-0-0", TagSlug: "v1-0-0"},
+				{Name: "v1.0.1", NameSlug: "v1-0-1", TagSlug: "v1-0-1"},
 			},
 		},
 		{
@@ -139,7 +139,30 @@ func TestGetFilteredReleases(t *testing.T) {
 				{Name: "v1.0.1"},
 			},
 			expectedReleases: []Release{
-				{Name: "v1.0.1", NameSlug: "v1-0-1"},
+				{Name: "v1.0.1", NameSlug: "v1-0-1", TagSlug: "v1-0-1"},
+			},
+		},
+		{
+			name: "ignore patterns",
+			params: Parameters{
+				MinRelease: "v0.0.0",
+				IgnorePatterns: []string{
+					// ignore releases that contain `llm.<number>`
+					`llm\.\d`,
+				},
+			},
+			releases: []Release{
+				{Name: "v0.0.0"},
+				{Name: "v0.0.1"},
+				{Name: "v0.1.0"},
+				{Name: "v0.1.1"},
+				{Name: "v1.0.0-llm.2"},
+			},
+			expectedReleases: []Release{
+				{Name: "v0.0.0", NameSlug: "v0-0-0", TagSlug: "v0-0-0"},
+				{Name: "v0.0.1", NameSlug: "v0-0-1", TagSlug: "v0-0-1"},
+				{Name: "v0.1.0", NameSlug: "v0-1-0", TagSlug: "v0-1-0"},
+				{Name: "v0.1.1", NameSlug: "v0-1-1", TagSlug: "v0-1-1"},
 			},
 		},
 	}

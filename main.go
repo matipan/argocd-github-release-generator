@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -44,6 +45,9 @@ type Parameters struct {
 	// When specified the plugin will return an additional item with the slug `latest`
 	// that points to the latest image.
 	WithLatest bool `json:"with_latest"`
+	// IgnorePatterns is a list of regex patterns that when match releases
+	// should be ignored
+	IgnorePatterns []string `json:"ignore_patterns"`
 }
 
 type Output struct {
@@ -178,6 +182,19 @@ func getFilteredReleases(releases []Release, params Parameters) ([]Release, erro
 		latestVersion    = map[string]string{}
 	)
 	for _, r := range releases {
+		// if the release matches any of the ignore patterns, skip it
+		var skipPattern bool
+		for _, pattern := range params.IgnorePatterns {
+			matched, _ := regexp.Match(pattern, []byte(r.Name))
+			if matched {
+				skipPattern = true
+				break
+			}
+		}
+		if skipPattern {
+			continue
+		}
+
 		if semver.Compare(r.Name, params.MinRelease) < 0 {
 			continue
 		}
