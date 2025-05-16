@@ -143,6 +143,24 @@ func TestGetFilteredReleases(t *testing.T) {
 			},
 		},
 		{
+			name: "keep last releases ignore min",
+			params: Parameters{
+				KeepReleases: 2,
+			},
+			releases: []Release{
+				{Name: "v0.0.0"},
+				{Name: "v0.0.1"},
+				{Name: "v0.1.0"},
+				{Name: "v0.1.1"},
+				{Name: "v1.0.0"},
+				{Name: "v1.0.1"},
+			},
+			expectedReleases: []Release{
+				{Name: "v1.0.0", NameSlug: "v1-0-0", TagSlug: "v1-0-0"},
+				{Name: "v1.0.1", NameSlug: "v1-0-1", TagSlug: "v1-0-1"},
+			},
+		},
+		{
 			name: "ignore patterns",
 			params: Parameters{
 				MinRelease: "v0.0.0",

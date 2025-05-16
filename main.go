@@ -105,7 +105,7 @@ func generatorHandler(l zerolog.Logger) http.HandlerFunc {
 			return
 		}
 
-		if !semver.IsValid(req.Input.Parameters.MinRelease) {
+		if req.Input.Parameters.MinRelease != "" && !semver.IsValid(req.Input.Parameters.MinRelease) {
 			l.Error().Msgf("invalid semver: %s", req.Input.Parameters.MinRelease)
 			http.Error(w, "invalid semver. Check https://pkg.go.dev/golang.org/x/mod/semver for details on which are valid versions", http.StatusBadRequest)
 		}
@@ -195,7 +195,7 @@ func getFilteredReleases(releases []Release, params Parameters) ([]Release, erro
 			continue
 		}
 
-		if semver.Compare(r.Name, params.MinRelease) < 0 {
+		if params.MinRelease != "" && semver.Compare(r.Name, params.MinRelease) < 0 {
 			continue
 		}
 
